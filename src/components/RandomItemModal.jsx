@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useItems } from '../context/ItemsContext';
 import { useAuth } from '../context/AuthContext';
 import { RARITY_COLORS } from '../data/itemsData';
-import { Dices, ExternalLink, Crosshair, Check, X, Sparkles } from 'lucide-react';
+import ItemIcon from './ItemIcon';
+import { Dices, ExternalLink, Crosshair, Check, X } from 'lucide-react';
 
 export default function RandomItemModal({ isOpen, onClose }) {
   const { pickRandomTarget, toggleComplete, toggleClaim, progress } = useItems();
@@ -29,7 +30,6 @@ export default function RandomItemModal({ isOpen, onClose }) {
 
   const itemState = targetItem ? progress[targetItem.id] || {} : {};
   const isClaimedByMe = itemState.claimed_by === currentUser;
-  const isCompleted = Boolean(itemState.is_completed);
   const colorInfo = targetItem ? RARITY_COLORS[targetItem.rarity] || RARITY_COLORS.Common : null;
   const wikiUrl = targetItem
     ? `https://minecraft.wiki/w/Special:Search?search=${encodeURIComponent(targetItem.name)}`
@@ -50,41 +50,40 @@ export default function RandomItemModal({ isOpen, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-      <div className="relative w-full max-w-lg bg-[#131722] border border-[#23293a] rounded-2xl p-6 sm:p-8 shadow-2xl text-slate-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xs">
+      <div className="relative w-full max-w-md mc-panel p-5 text-slate-100">
         
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition"
+          className="mc-btn absolute right-3 top-3 px-2 py-1 text-xs"
         >
-          <X className="w-5 h-5" />
+          <X className="w-3.5 h-3.5" />
         </button>
 
         {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-gradient-to-br from-cyan-500/20 to-emerald-500/20 border border-cyan-500/30 rounded-xl text-cyan-400">
-            <Dices className="w-6 h-6" />
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="w-8 h-8 bg-[#3a2f0e] border-2 border-black flex items-center justify-center text-[#ffaa00]">
+            <Dices className="w-4 h-4" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-              Next Survival Target
-              <Sparkles className="w-4 h-4 text-amber-400" />
+            <h2 className="text-xs sm:text-sm font-bold font-minecraft text-[#ffff55] mc-shadow-yellow">
+              NEXT SURVIVAL TARGET
             </h2>
-            <p className="text-xs text-slate-400">Randomly selected uncollected item</p>
+            <p className="text-[10px] font-pixel text-[#aaaaaa]">Random uncollected item</p>
           </div>
         </div>
 
-        {/* Item Display Card */}
+        {/* Item Display Card (Minecraft Tooltip Style!) */}
         {targetItem ? (
           <div
-            className={`p-6 rounded-2xl bg-[#0e111a] border ${colorInfo.border} shadow-lg mb-6 transition-all duration-300 ${
+            className={`mc-tooltip p-4 mb-4 transition-all ${
               isRolling ? 'opacity-30 scale-95' : 'opacity-100 scale-100'
             }`}
           >
             <div className="flex items-center justify-between gap-2 mb-3">
               <span
-                className={`px-2 py-0.5 rounded text-xs font-bold border tracking-wide uppercase ${colorInfo.badge}`}
+                className={`px-1.5 py-0.5 text-[8px] font-minecraft border border-black uppercase ${colorInfo.badge}`}
               >
                 {targetItem.rarity}
               </span>
@@ -93,71 +92,73 @@ export default function RandomItemModal({ isOpen, onClose }) {
                 href={wikiUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 text-xs font-semibold text-cyan-400 hover:text-cyan-300 hover:underline"
+                className="flex items-center gap-1 text-[10px] font-pixel text-[#55ffff] hover:underline"
               >
-                <span>Minecraft Wiki</span>
-                <ExternalLink className="w-3.5 h-3.5" />
+                <span>Wiki</span>
+                <ExternalLink className="w-3 h-3" />
               </a>
             </div>
 
-            <h3 className="text-2xl font-black text-white tracking-tight mb-1">
-              {targetItem.name}
-            </h3>
-
-            <p className="text-xs font-medium text-slate-400 mb-4">
-              Category: <strong className="text-slate-300">{targetItem.category}</strong>
-            </p>
+            <div className="flex items-center gap-3 mb-3">
+              <ItemIcon item={targetItem} size="lg" />
+              <div>
+                <h3 className={`text-base sm:text-lg font-bold font-minecraft ${colorInfo.text} mc-shadow`}>
+                  {targetItem.name}
+                </h3>
+                <p className="text-[10px] font-pixel text-[#aaaaaa] mt-0.5">
+                  Category: <span className="text-[#ffffff]">{targetItem.category}</span>
+                </p>
+              </div>
+            </div>
 
             {itemState.claimed_by && (
-              <div className="text-xs text-amber-400 bg-amber-950/40 border border-amber-800/40 p-2.5 rounded-xl flex items-center gap-2">
-                <Crosshair className="w-4 h-4 shrink-0" />
+              <div className="text-[10px] font-pixel text-[#ffaa00] bg-[#291e0a] border border-black p-1.5 flex items-center gap-1.5">
+                <Crosshair className="w-3 h-3 shrink-0" />
                 <span>
-                  Currently marked as hunted by <strong>{itemState.claimed_by}</strong>
+                  Hunted by <strong>{itemState.claimed_by}</strong>
                 </span>
               </div>
             )}
           </div>
         ) : (
-          <div className="py-12 text-center text-sm text-slate-400 bg-[#0e111a] rounded-2xl mb-6">
+          <div className="py-8 text-center text-xs font-pixel text-[#aaaaaa] mc-slot mb-4">
             🎉 All matching items in your current filter are already completed or claimed!
           </div>
         )}
 
         {/* Action Buttons */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           {targetItem && (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={handleClaim}
-                className="py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 bg-[#191f2f] hover:bg-[#20273c] text-cyan-300 border border-cyan-800/50 shadow-sm transition"
+                className="mc-btn-emerald py-2 px-3 text-[10px] flex items-center justify-center gap-1.5"
               >
-                <Crosshair className="w-4 h-4" />
-                <span>{isClaimedByMe ? 'Release Hunt' : 'Start Hunting'}</span>
+                <Crosshair className="w-3 h-3" />
+                <span>{isClaimedByMe ? 'RELEASE' : 'START HUNT'}</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleComplete}
-                className="py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-black shadow-lg shadow-emerald-500/20 transition"
+                className="mc-btn-gold py-2 px-3 text-[10px] flex items-center justify-center gap-1.5"
               >
-                <Check className="w-4 h-4 stroke-[3]" />
-                <span>Mark Collected</span>
+                <Check className="w-3 h-3 stroke-[3]" />
+                <span>COLLECTED</span>
               </button>
             </div>
           )}
 
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={rollItem}
-              disabled={isRolling}
-              className="w-full py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold text-slate-300 bg-slate-800/80 hover:bg-slate-700 hover:text-white transition flex items-center justify-center gap-2"
-            >
-              <Dices className={`w-4 h-4 ${isRolling ? 'animate-spin' : ''}`} />
-              <span>Roll Another Item</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={rollItem}
+            disabled={isRolling}
+            className="mc-btn w-full py-2 px-3 text-[10px] flex items-center justify-center gap-1.5"
+          >
+            <Dices className={`w-3 h-3 ${isRolling ? 'animate-spin' : ''}`} />
+            <span>ROLL ANOTHER</span>
+          </button>
         </div>
 
       </div>

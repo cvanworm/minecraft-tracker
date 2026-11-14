@@ -68,39 +68,44 @@ export const RARITIES = ["Common", "Uncommon", "Rare", "Epic", "Legendary"];
 
 export const RARITY_COLORS = {
   Common: {
-    badge: "bg-slate-800/80 text-slate-300 border-slate-700/80",
-    border: "border-slate-800/60 hover:border-slate-700",
-    glow: "hover:shadow-slate-500/10",
-    accent: "#94a3b8",
-    dot: "bg-slate-400"
+    badge: "bg-[#2b2b2b] text-white border-[#ffffff]/40",
+    border: "border-[#3f3f3f] hover:border-[#ffffff]",
+    glow: "hover:shadow-[0_0_10px_rgba(255,255,255,0.2)]",
+    accent: "#ffffff",
+    dot: "bg-white",
+    text: "text-white"
   },
   Uncommon: {
-    badge: "bg-emerald-950/70 text-emerald-300 border-emerald-800/60",
-    border: "border-emerald-950/80 hover:border-emerald-700/60",
-    glow: "hover:shadow-emerald-500/10",
-    accent: "#22c55e",
-    dot: "bg-emerald-400"
+    badge: "bg-[#2d2c08] text-[#ffff55] border-[#ffff55]/50",
+    border: "border-[#4d4c14] hover:border-[#ffff55]",
+    glow: "hover:shadow-[0_0_10px_rgba(255,255,85,0.25)]",
+    accent: "#ffff55",
+    dot: "bg-[#ffff55]",
+    text: "text-[#ffff55]"
   },
   Rare: {
-    badge: "bg-cyan-950/70 text-cyan-300 border-cyan-800/60",
-    border: "border-cyan-950/80 hover:border-cyan-700/60",
-    glow: "hover:shadow-cyan-500/10",
-    accent: "#06b6d4",
-    dot: "bg-cyan-400"
+    badge: "bg-[#082a2d] text-[#55ffff] border-[#55ffff]/50",
+    border: "border-[#14494d] hover:border-[#55ffff]",
+    glow: "hover:shadow-[0_0_10px_rgba(85,255,255,0.25)]",
+    accent: "#55ffff",
+    dot: "bg-[#55ffff]",
+    text: "text-[#55ffff]"
   },
   Epic: {
-    badge: "bg-purple-950/70 text-purple-300 border-purple-800/60",
-    border: "border-purple-950/80 hover:border-purple-700/60",
-    glow: "hover:shadow-purple-500/10",
-    accent: "#c084fc",
-    dot: "bg-purple-400"
+    badge: "bg-[#2d082d] text-[#ff55ff] border-[#ff55ff]/50",
+    border: "border-[#4d144d] hover:border-[#ff55ff]",
+    glow: "hover:shadow-[0_0_10px_rgba(255,85,255,0.25)]",
+    accent: "#ff55ff",
+    dot: "bg-[#ff55ff]",
+    text: "text-[#ff55ff]"
   },
   Legendary: {
-    badge: "bg-amber-950/70 text-amber-300 border-amber-800/60",
-    border: "border-amber-950/80 hover:border-amber-700/60",
-    glow: "hover:shadow-amber-500/10",
-    accent: "#f59e0b",
-    dot: "bg-amber-400"
+    badge: "bg-[#2d1e08] text-[#ffaa00] border-[#ffaa00]/50",
+    border: "border-[#4d3614] hover:border-[#ffaa00]",
+    glow: "hover:shadow-[0_0_10px_rgba(255,170,0,0.3)]",
+    accent: "#ffaa00",
+    dot: "bg-[#ffaa00]",
+    text: "text-[#ffaa00]"
   }
 };
 

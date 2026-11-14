@@ -6,13 +6,8 @@ import {
   X,
   Dices,
   Layers,
-  CheckCircle,
-  Clock,
-  Compass,
-  ChevronsUpDown,
-  Filter,
   CheckSquare,
-  Crosshair,
+  Trophy,
 } from 'lucide-react';
 
 export default function FilterBar({ onOpenRandomModal }) {
@@ -43,81 +38,80 @@ export default function FilterBar({ onOpenRandomModal }) {
   };
 
   return (
-    <div className="sticky top-[182px] sm:top-[166px] z-30 bg-[#0e1118]/95 backdrop-blur-md border-b border-[#1f2433] shadow-md py-3">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-3">
+    <div className="sticky top-0 z-30 bg-[#1c1815] border-b-4 border-black shadow-xl py-2.5">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 space-y-2.5">
         
         {/* Row 1: Search + View Mode Tabs + Random Target Button */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-2.5">
           
           {/* Instant Search input */}
-          <div className="relative flex-1 min-w-[240px]">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <div className="relative flex-1 min-w-[220px]">
+            <Search className="w-4 h-4 text-[#777777] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search 1,420 items (e.g. Netherite, Potion, Disc)..."
-              className="w-full bg-[#131622] border border-[#23283a] rounded-xl pl-10 pr-9 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
+              placeholder="Search 1,420 items..."
+              className="mc-input w-full pl-9 pr-8 py-2 text-xs placeholder-[#666666]"
             />
             {searchQuery && (
               <button
                 onClick={handleClearSearch}
                 title="Clear search"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#888888] hover:text-white transition"
               >
                 <X className="w-4 h-4" />
               </button>
             )}
           </div>
 
-          {/* View Mode Toggle: Checklist vs Completed (Trophy Room) */}
-          <div className="flex items-center bg-[#131622] border border-[#23283a] p-1 rounded-xl">
+          {/* View Mode Toggle: Checklist vs Completed (Tabs) */}
+          <div className="flex items-center gap-1">
             <button
               onClick={() => setViewMode('checklist')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+              className={`px-3 py-1.5 text-[10px] font-minecraft border-2 border-black transition ${
                 viewMode === 'checklist'
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'mc-btn-emerald'
+                  : 'mc-btn opacity-80'
               }`}
             >
-              <CheckSquare className="w-3.5 h-3.5" />
-              <span>Checklist</span>
+              <CheckSquare className="w-3 h-3 inline mr-1" />
+              <span>CHECKLIST</span>
             </button>
             <button
               onClick={() => setViewMode('completed')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+              className={`px-3 py-1.5 text-[10px] font-minecraft border-2 border-black transition ${
                 viewMode === 'completed'
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'mc-btn-gold'
+                  : 'mc-btn opacity-80'
               }`}
             >
-              <CheckCircle className="w-3.5 h-3.5" />
-              <span>Completed ({stats.completedCount})</span>
+              <Trophy className="w-3 h-3 inline mr-1" />
+              <span>COMPLETED ({stats.completedCount})</span>
             </button>
           </div>
 
           {/* "Pick a Random Target" Button */}
           <button
             onClick={onOpenRandomModal}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-900 bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 shadow-md shadow-cyan-500/20 transition active:scale-[0.98]"
+            className="mc-btn-gold px-3 py-2 text-[10px] font-minecraft flex items-center gap-1.5 shrink-0"
             title="Roll 1 random uncollected item"
           >
-            <Dices className="w-4 h-4" />
-            <span className="hidden sm:inline">Pick Random Target</span>
-            <span className="sm:hidden">Random</span>
+            <Dices className="w-3.5 h-3.5" />
+            <span>RANDOM TARGET</span>
           </button>
         </div>
 
         {/* Row 2: Category Selector + Status Filter + Rarity Filter Pills */}
-        <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
           
           {/* Category Dropdown */}
-          <div className="flex items-center gap-2 min-w-[200px]">
-            <Layers className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+          <div className="flex items-center gap-1.5 min-w-[200px]">
+            <Layers className="w-3.5 h-3.5 text-[#aaaaaa] shrink-0" />
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="bg-[#131622] border border-[#23283a] rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 cursor-pointer w-full"
+              className="mc-input px-2.5 py-1 text-[11px] font-pixel cursor-pointer w-full"
             >
               <option value="All">All Categories (21)</option>
               {CATEGORIES.map((cat) => {
@@ -132,20 +126,20 @@ export default function FilterBar({ onOpenRandomModal }) {
           </div>
 
           {/* Status Filter Toggle */}
-          <div className="flex items-center bg-[#131622] border border-[#23283a] p-0.5 rounded-lg">
+          <div className="flex items-center gap-1">
             {[
               { id: 'all', label: 'All' },
               { id: 'remaining', label: 'Remaining' },
-              { id: 'completed', label: 'Completed' },
-              { id: 'claimed_by_me', label: 'Claimed by Me' },
+              { id: 'completed', label: 'Done' },
+              { id: 'claimed_by_me', label: 'Hunting' },
             ].map((st) => (
               <button
                 key={st.id}
                 onClick={() => setStatusFilter(st.id)}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition ${
+                className={`px-2 py-1 text-[10px] font-minecraft border border-black ${
                   statusFilter === st.id
-                    ? 'bg-slate-700/80 text-white shadow-xs'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-[#3b3b3b] text-[#ffff55] shadow-[inset_1px_1px_0_#fff,inset_-1px_-1px_0_#000]'
+                    : 'bg-[#181818] text-[#888888] hover:text-[#cccccc]'
                 }`}
               >
                 {st.label}
@@ -154,8 +148,7 @@ export default function FilterBar({ onOpenRandomModal }) {
           </div>
 
           {/* Rarity Multi-Select Pills */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[11px] font-medium text-slate-500 mr-1 hidden sm:inline">Rarity:</span>
+          <div className="flex items-center gap-1 flex-wrap">
             {RARITIES.map((rarity) => {
               const isSelected = selectedRarities.includes(rarity);
               const colorInfo = RARITY_COLORS[rarity];
@@ -164,16 +157,13 @@ export default function FilterBar({ onOpenRandomModal }) {
                 <button
                   key={rarity}
                   onClick={() => toggleRarity(rarity)}
-                  className={`px-2 py-0.5 rounded-md text-[11px] font-semibold border transition flex items-center gap-1.5 ${
+                  className={`px-2 py-0.5 text-[9px] font-minecraft border-2 border-black transition ${
                     isSelected
-                      ? colorInfo.badge
-                      : 'bg-transparent text-slate-500 border-slate-800 opacity-50 hover:opacity-80'
+                      ? `${colorInfo.badge} shadow-[inset_1px_1px_0px_rgba(255,255,255,0.4)]`
+                      : 'bg-[#121212] text-[#555555] opacity-50 hover:opacity-80'
                   }`}
                 >
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full ${isSelected ? colorInfo.dot : 'bg-slate-600'}`}
-                  />
-                  <span>{rarity}</span>
+                  <span className="mc-shadow-sm">{rarity}</span>
                 </button>
               );
             })}
@@ -181,35 +171,35 @@ export default function FilterBar({ onOpenRandomModal }) {
             {selectedRarities.length < RARITIES.length && (
               <button
                 onClick={handleSelectAllRarities}
-                className="text-[10px] text-cyan-400 hover:underline ml-1"
+                className="text-[9px] font-minecraft text-[#55ffff] hover:underline ml-1"
               >
-                Select All
+                ALL
               </button>
             )}
           </div>
 
-          {/* Expand / Collapse All & Match Counter */}
-          <div className="flex items-center gap-3 text-slate-400 text-[11px] ml-auto">
+          {/* Count and Collapse Toggles */}
+          <div className="flex items-center gap-2 text-[#888888] text-[10px] font-pixel ml-auto">
             <span>
-              Showing <strong className="text-white font-mono">{filteredItems.length}</strong> items
+              <strong className="text-white font-minecraft">{filteredItems.length}</strong> ITEMS
             </span>
 
             {viewMode === 'checklist' && (
-              <div className="flex items-center gap-1 pl-2 border-l border-slate-800">
+              <div className="flex items-center gap-1 pl-1 border-l border-[#333333]">
                 <button
                   onClick={expandAll}
-                  className="hover:text-cyan-400 transition"
+                  className="hover:text-[#ffff55] transition"
                   title="Expand all categories"
                 >
-                  Expand
+                  [+]
                 </button>
                 <span>/</span>
                 <button
                   onClick={collapseAll}
-                  className="hover:text-cyan-400 transition"
+                  className="hover:text-[#ffff55] transition"
                   title="Collapse all categories"
                 >
-                  Collapse
+                  [-]
                 </button>
               </div>
             )}

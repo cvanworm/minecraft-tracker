@@ -2,7 +2,8 @@ import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useItems } from '../context/ItemsContext';
 import { RARITY_COLORS } from '../data/itemsData';
-import { Check, ExternalLink, Crosshair, User, Clock } from 'lucide-react';
+import ItemIcon from './ItemIcon';
+import { Check, ExternalLink, Crosshair } from 'lucide-react';
 
 export default function ItemCard({ item }) {
   const { currentUser } = useAuth();
@@ -15,10 +16,8 @@ export default function ItemCard({ item }) {
 
   const claimedBy = itemState.claimed_by;
   const isClaimedByMe = claimedBy === currentUser;
-  const isClaimedByOther = claimedBy && claimedBy !== currentUser;
 
   const colorInfo = RARITY_COLORS[item.rarity] || RARITY_COLORS.Common;
-
   const wikiUrl = `https://minecraft.wiki/w/Special:Search?search=${encodeURIComponent(item.name)}`;
 
   const formatDate = (isoString) => {
@@ -33,66 +32,68 @@ export default function ItemCard({ item }) {
 
   return (
     <div
-      className={`group relative flex items-center justify-between gap-3 p-3 rounded-xl border transition-all duration-200 ${
+      className={`group relative flex items-center justify-between gap-2 p-1.5 sm:p-2 border-2 border-black transition-all ${
         isCompleted
-          ? 'bg-[#10131b]/60 border-slate-800/60 opacity-80'
-          : `bg-[#141824] ${colorInfo.border} ${colorInfo.glow} hover:bg-[#181d2c]`
+          ? 'bg-[#151c14] shadow-[inset_2px_2px_0px_#0b120a,inset_-2px_-2px_0px_#274225] opacity-80'
+          : `bg-[#24211e] hover:bg-[#2c2824] shadow-[inset_2px_2px_0px_#3d3732,inset_-2px_-2px_0px_#12100e]`
       }`}
     >
-      {/* Left: Checkbox + Name + Badges */}
-      <div className="flex items-center gap-3 min-w-0">
+      {/* Left: Checkbox + Block/Item Icon + Name + Badges */}
+      <div className="flex items-center gap-2 min-w-0">
         
-        {/* Custom Checkbox */}
+        {/* Minecraft Item Slot Checkbox */}
         <button
           type="button"
           onClick={() => toggleComplete(item.id)}
           aria-label={isCompleted ? `Unmark ${item.name}` : `Mark ${item.name} as collected`}
-          className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 border transition-all duration-200 ${
+          className={`w-7 h-7 flex items-center justify-center shrink-0 border-2 border-black transition-all ${
             isCompleted
-              ? 'bg-emerald-500 border-emerald-400 text-black shadow-md shadow-emerald-500/20'
-              : 'border-slate-700 bg-[#0b0e16] hover:border-cyan-400 text-transparent hover:text-slate-600'
+              ? 'bg-[#1e5c24] shadow-[inset_2px_2px_0px_#38a843,inset_-2px_-2px_0px_#0e3013] text-[#55ff55]'
+              : 'mc-slot mc-slot-hover text-transparent hover:text-[#555555]'
           }`}
         >
-          <Check className="w-4 h-4 stroke-[3]" />
+          <Check className="w-4 h-4 stroke-[4]" />
         </button>
+
+        {/* Real Minecraft Block/Item Icon */}
+        <ItemIcon item={item} size="md" />
 
         {/* Item Details */}
         <div className="min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <span
-              className={`text-sm font-semibold truncate tracking-tight transition ${
+              className={`text-xs font-pixel tracking-wide truncate transition ${
                 isCompleted
-                  ? 'line-through text-slate-500'
-                  : 'text-slate-100 group-hover:text-white'
+                  ? 'line-through text-[#666666]'
+                  : `${colorInfo.text} mc-shadow-sm`
               }`}
               title={item.name}
             >
               {item.name}
             </span>
 
-            {/* Rarity Badge */}
+            {/* Rarity Tag */}
             <span
-              className={`px-1.5 py-0.5 rounded text-[10px] font-bold border tracking-wide uppercase ${colorInfo.badge}`}
+              className={`px-1 py-0.2 text-[8px] font-minecraft border border-black uppercase ${colorInfo.badge}`}
             >
               {item.rarity}
             </span>
           </div>
 
-          {/* Subtitle / Metadata (Completed by / Claimed by) */}
-          <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
+          {/* Subtitle (Found by / Hunted by) */}
+          <div className="flex items-center gap-2 mt-0.5 text-[9px] font-pixel">
             {isCompleted ? (
-              <span className="flex items-center gap-1 text-emerald-400/90 font-medium">
-                <Check className="w-3 h-3" />
-                Found by <strong className="font-semibold text-emerald-300">{completedBy || 'Survivor'}</strong>
-                {completedAt && <span className="opacity-70">({formatDate(completedAt)})</span>}
+              <span className="text-[#55ff55] mc-shadow-sm flex items-center gap-1">
+                Found by <strong className="text-white">{completedBy || 'Survivor'}</strong>
+                {completedAt && <span className="text-[#888888]">({formatDate(completedAt)})</span>}
               </span>
             ) : claimedBy ? (
               <span
-                className={`flex items-center gap-1 font-medium ${
-                  isClaimedByMe ? 'text-cyan-400' : 'text-amber-400'
-                }`}
+                className={`flex items-center gap-1 font-semibold ${
+                  isClaimedByMe ? 'text-[#55ffff]' : 'text-[#ffaa00]'
+                } mc-shadow-sm`}
               >
-                <Crosshair className="w-3 h-3 animate-spin-slow" />
+                <Crosshair className="w-2.5 h-2.5" />
                 {isClaimedByMe ? 'You are hunting this' : `Hunted by ${claimedBy}`}
               </span>
             ) : null}
@@ -100,43 +101,31 @@ export default function ItemCard({ item }) {
         </div>
       </div>
 
-      {/* Right Actions: Claim button + Wiki link */}
-      <div className="flex items-center gap-1.5 shrink-0">
-        
-        {/* Claim / Hunting Toggle (Only on uncompleted items) */}
+      {/* Right Actions: Hunt Claim button + Wiki link */}
+      <div className="flex items-center gap-1 shrink-0">
         {!isCompleted && (
           <button
             type="button"
             onClick={() => toggleClaim(item.id)}
-            title={
+            title={isClaimedByMe ? 'Release hunt' : 'Claim to hunt this item'}
+            className={`px-2 py-1 text-[9px] font-minecraft border-2 border-black transition ${
               isClaimedByMe
-                ? 'Click to release hunt claim'
+                ? 'mc-btn-emerald'
                 : claimedBy
-                ? `Currently being hunted by ${claimedBy}. Click to overtake.`
-                : 'Claim this item to notify your friend you are hunting it'
-            }
-            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium border transition ${
-              isClaimedByMe
-                ? 'bg-cyan-950/80 text-cyan-300 border-cyan-700/80'
-                : claimedBy
-                ? 'bg-amber-950/50 text-amber-300 border-amber-800/60'
-                : 'bg-transparent text-slate-400 border-transparent hover:border-slate-700 hover:bg-slate-800/60 hover:text-slate-200'
+                ? 'mc-btn-gold'
+                : 'mc-btn text-[8px]'
             }`}
           >
-            <Crosshair className="w-3 h-3" />
-            <span className="hidden sm:inline">
-              {isClaimedByMe ? 'Hunting' : claimedBy ? claimedBy : 'Hunt'}
-            </span>
+            {isClaimedByMe ? 'HUNTING' : claimedBy ? claimedBy.slice(0, 7) : 'HUNT'}
           </button>
         )}
 
-        {/* Wiki Link */}
         <a
           href={wikiUrl}
           target="_blank"
           rel="noopener noreferrer"
           title={`Lookup "${item.name}" on Minecraft Wiki`}
-          className="p-1.5 rounded-lg text-slate-500 hover:text-cyan-400 hover:bg-slate-800/80 transition"
+          className="p-1 text-[#777777] hover:text-[#55ffff] transition"
         >
           <ExternalLink className="w-3.5 h-3.5" />
         </a>

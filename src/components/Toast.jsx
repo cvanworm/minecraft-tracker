@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useItems } from '../context/ItemsContext';
-import { RotateCcw, X, CheckCircle2 } from 'lucide-react';
+import { X } from 'lucide-react';
 
 export default function Toast() {
   const { toast, setToast } = useItems();
@@ -18,28 +18,38 @@ export default function Toast() {
   if (!toast) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 animate-bounce-short">
-      <div className="flex items-center gap-3 bg-[#161a26] border border-[#2b3248] text-slate-100 px-4 py-3 rounded-2xl shadow-2xl backdrop-blur-md">
-        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-        <span className="text-xs sm:text-sm font-medium">{toast.message}</span>
+    <div className="fixed bottom-5 right-5 z-50">
+      {/* Minecraft Advancement Pop-up Window */}
+      <div className="mc-tooltip p-3 max-w-sm flex items-center gap-3">
+        <div className="w-8 h-8 bg-[#221c0b] border-2 border-[#ffaa00] flex items-center justify-center text-base shrink-0">
+          🏆
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="text-[9px] font-minecraft text-[#ffff55] mc-shadow-yellow tracking-wider">
+            ADVANCEMENT MADE!
+          </div>
+          <div className="text-[11px] font-pixel text-white truncate mc-shadow-sm">
+            {toast.message}
+          </div>
+        </div>
 
         {toast.onUndo && (
           <button
             type="button"
             onClick={toast.onUndo}
-            className="flex items-center gap-1.5 ml-2 px-2.5 py-1 rounded-lg text-xs font-bold text-black bg-cyan-400 hover:bg-cyan-300 transition shadow-sm"
+            className="mc-btn px-2 py-1 text-[8px] text-[#ff5555] hover:text-white shrink-0"
           >
-            <RotateCcw className="w-3 h-3" />
-            <span>Undo</span>
+            UNDO
           </button>
         )}
 
         <button
           type="button"
           onClick={() => setToast(null)}
-          className="text-slate-500 hover:text-slate-300 ml-1 p-0.5 rounded transition"
+          className="text-[#888888] hover:text-white p-0.5 ml-1"
         >
-          <X className="w-4 h-4" />
+          <X className="w-3.5 h-3.5" />
         </button>
       </div>
     </div>

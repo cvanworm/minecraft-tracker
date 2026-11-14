@@ -9,23 +9,19 @@ import RandomItemModal from './components/RandomItemModal';
 import AuthModal from './components/AuthModal';
 import Toast from './components/Toast';
 import { CATEGORIES } from './data/itemsData';
-import { Sparkles, Layers, SearchX } from 'lucide-react';
 
 function MainTrackerApp() {
   const { isAuthenticated, isLoadingAuth } = useAuth();
   const {
     filteredItems,
     viewMode,
-    selectedCategory,
     setSearchQuery,
     setSelectedCategory,
-    setSelectedRarities,
     setStatusFilter,
   } = useItems();
 
   const [isRandomModalOpen, setIsRandomModalOpen] = useState(false);
 
-  // Group filtered items by category preserving original category order
   const groupedByCategory = useMemo(() => {
     const groups = {};
 
@@ -47,18 +43,20 @@ function MainTrackerApp() {
 
   if (isLoadingAuth) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0b0d11] text-slate-400">
-        <div className="flex items-center gap-3">
-          <div className="w-5 h-5 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
-          <span className="text-sm font-medium">Loading Minecraft tracker...</span>
+      <div className="min-h-screen flex items-center justify-center mc-dirt-bg text-slate-200">
+        <div className="mc-panel p-6 text-center">
+          <div className="w-8 h-8 border-4 border-[#ffff55] border-t-transparent animate-spin mx-auto mb-3" />
+          <span className="text-xs font-minecraft text-[#ffff55] mc-shadow-yellow">
+            GENERATING WORLD...
+          </span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0b0d11] text-slate-100 flex flex-col font-sans">
-      {/* Shared Site Password & Display Name Modal */}
+    <div className="min-h-screen mc-dirt-bg text-slate-100 flex flex-col font-pixel selection:bg-[#55ffff]/40 selection:text-white">
+      {/* Site Password & Player Name Modal */}
       <AuthModal />
 
       {isAuthenticated && (
@@ -70,27 +68,29 @@ function MainTrackerApp() {
           <FilterBar onOpenRandomModal={() => setIsRandomModalOpen(true)} />
 
           {/* Main Body Content */}
-          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+          <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-4">
             {viewMode === 'completed' ? (
               <CompletedView />
             ) : (
               <div>
                 {filteredItems.length === 0 ? (
-                  <div className="py-20 text-center bg-[#131622]/60 border border-slate-800/80 rounded-3xl p-8 max-w-lg mx-auto">
-                    <SearchX className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                    <h3 className="text-lg font-bold text-white mb-1">No items found</h3>
-                    <p className="text-xs text-slate-400 mb-5 leading-relaxed">
-                      No items matched your current search and filter combination. Try clearing some filters.
+                  <div className="py-16 text-center mc-panel p-6 max-w-md mx-auto">
+                    <div className="text-3xl mb-2">🔍</div>
+                    <h3 className="text-sm font-minecraft text-[#ffff55] mc-shadow-yellow mb-2">
+                      NO ITEMS FOUND
+                    </h3>
+                    <p className="text-xs font-pixel text-[#aaaaaa] mb-4">
+                      No items matched your current filter criteria.
                     </p>
                     <button
                       onClick={resetAllFilters}
-                      className="px-4 py-2 bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 rounded-xl text-xs font-semibold hover:bg-cyan-500/30 transition"
+                      className="mc-btn-emerald px-4 py-2 text-xs"
                     >
-                      Reset All Filters
+                      RESET FILTERS
                     </button>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div>
                     {CATEGORIES.map((category) => {
                       const categoryItems = groupedByCategory[category];
                       if (!categoryItems || categoryItems.length === 0) {
@@ -121,15 +121,15 @@ function MainTrackerApp() {
           <Toast />
 
           {/* Footer */}
-          <footer className="border-t border-[#1a1e2b] py-6 text-center text-xs text-slate-500">
-            <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <p>Minecraft "All Items" Vanilla Survival Challenge Tracker</p>
-              <div className="flex items-center gap-4 text-slate-400">
+          <footer className="border-t-4 border-black bg-[#16120e] py-4 text-center text-[10px] font-pixel text-[#777777]">
+            <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+              <p className="mc-shadow-sm">Minecraft "All Items" Vanilla Survival Tracker</p>
+              <div className="flex items-center gap-3 text-[#aaaaaa]">
                 <a
                   href="https://minecraft.wiki"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-cyan-400 transition"
+                  className="hover:text-[#55ffff] transition mc-shadow-sm"
                 >
                   Minecraft Wiki
                 </a>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Lock, User, Sparkles, AlertCircle } from 'lucide-react';
+import { Lock, User, AlertCircle } from 'lucide-react';
 
 export default function AuthModal() {
   const {
@@ -17,7 +17,6 @@ export default function AuthModal() {
   const [newUsername, setNewUsername] = useState('');
   const [error, setError] = useState('');
 
-  // If already authenticated and not in switch user mode, don't show
   if (isAuthenticated && !showSwitchModal) {
     return null;
   }
@@ -34,7 +33,7 @@ export default function AuthModal() {
   const handleSwitchSubmit = (e) => {
     e.preventDefault();
     if (!newUsername.trim()) {
-      setError('Please enter a display name');
+      setError('Please enter a player name');
       return;
     }
     switchUser(newUsername.trim());
@@ -43,132 +42,125 @@ export default function AuthModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-      <div className="relative w-full max-w-md bg-[#13161f] border border-[#232838] rounded-2xl p-6 md:p-8 shadow-2xl text-slate-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xs">
+      <div className="relative w-full max-w-md mc-panel p-6 text-slate-100">
         
-        {/* Decorative corner glow */}
-        <div className="absolute -top-12 -left-12 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
-
         {showSwitchModal ? (
           <div>
-            <div className="flex items-center gap-3 mb-5">
-              <div className="p-3 bg-cyan-950/70 border border-cyan-800/60 rounded-xl text-cyan-400">
-                <User className="w-6 h-6" />
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="w-8 h-8 bg-[#383838] border-2 border-black flex items-center justify-center text-[#55ffff]">
+                <User className="w-4 h-4" />
               </div>
               <div>
-                <h2 className="text-xl font-bold tracking-tight text-white">Switch Player</h2>
-                <p className="text-sm text-slate-400">Current player: <span className="font-semibold text-cyan-400">{currentUser}</span></p>
+                <h2 className="text-sm font-bold font-minecraft text-[#ffff55] mc-shadow-yellow">
+                  SWITCH PLAYER
+                </h2>
+                <p className="text-[10px] font-pixel text-[#aaaaaa]">
+                  Current player: <span className="text-[#55ffff]">{currentUser}</span>
+                </p>
               </div>
             </div>
 
             {error && (
-              <div className="mb-4 flex items-center gap-2 p-3 text-sm text-rose-400 bg-rose-950/50 border border-rose-800/60 rounded-xl">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{error}</span>
+              <div className="mb-3 p-2 text-[10px] font-pixel text-[#ff5555] bg-[#331111] border-2 border-black">
+                {error}
               </div>
             )}
 
-            <form onSubmit={handleSwitchSubmit} className="space-y-4">
+            <form onSubmit={handleSwitchSubmit} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-                  New Player Display Name
+                <label className="block text-[9px] font-minecraft uppercase tracking-wider text-[#aaaaaa] mb-1">
+                  New Player Name:
                 </label>
-                <div className="relative">
-                  <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={newUsername}
-                    onChange={(e) => setNewUsername(e.target.value)}
-                    placeholder="e.g. Alex"
-                    className="w-full bg-[#0b0d13] border border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                    autoFocus
-                  />
-                </div>
+                <input
+                  type="text"
+                  value={newUsername}
+                  onChange={(e) => setNewUsername(e.target.value)}
+                  placeholder="e.g. Alex"
+                  className="mc-input w-full px-3 py-2 text-xs"
+                  autoFocus
+                />
               </div>
 
-              <div className="flex items-center gap-3 pt-2">
+              <div className="grid grid-cols-2 gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowSwitchModal(false)}
-                  className="w-1/2 py-2.5 px-4 rounded-xl text-sm font-medium text-slate-400 bg-slate-800/60 hover:bg-slate-800 hover:text-slate-200 transition"
+                  className="mc-btn py-2 text-[10px]"
                 >
-                  Cancel
+                  CANCEL
                 </button>
                 <button
                   type="submit"
-                  className="w-1/2 py-2.5 px-4 rounded-xl text-sm font-semibold text-black bg-cyan-400 hover:bg-cyan-300 shadow-lg shadow-cyan-500/20 transition"
+                  className="mc-btn-emerald py-2 text-[10px]"
                 >
-                  Switch
+                  CONFIRM
                 </button>
               </div>
             </form>
           </div>
         ) : (
           <div>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-cyan-950/70 border border-cyan-800/60 rounded-xl text-cyan-400">
-                <Sparkles className="w-6 h-6" />
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="w-10 h-10 bg-[#383838] border-2 border-black flex items-center justify-center text-xl shrink-0">
+                ⛏️
               </div>
               <div>
-                <h2 className="text-xl font-bold tracking-tight text-white">Minecraft All-Items Tracker</h2>
-                <p className="text-xs text-slate-400">Survival Item Hunt Co-op</p>
+                <h2 className="text-sm sm:text-base font-bold font-minecraft text-white mc-shadow">
+                  MINECRAFT ALL-ITEMS
+                </h2>
+                <p className="text-[10px] font-pixel text-[#aaaaaa]">
+                  Multiplayer Survival Tracker
+                </p>
               </div>
             </div>
 
-            <p className="text-sm text-slate-300 mb-5 leading-relaxed">
-              Enter the shared site password and your Minecraft username to begin tracking and claiming items live.
+            <p className="text-[11px] font-pixel text-[#cccccc] mb-4 leading-relaxed mc-shadow-sm">
+              Enter the shared server password and your Minecraft player name to join the hunt.
             </p>
 
             {error && (
-              <div className="mb-4 flex items-center gap-2 p-3 text-sm text-rose-400 bg-rose-950/50 border border-rose-800/60 rounded-xl">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{error}</span>
+              <div className="mb-3 p-2 text-[10px] font-pixel text-[#ff5555] bg-[#331111] border-2 border-black">
+                {error}
               </div>
             )}
 
-            <form onSubmit={handleLoginSubmit} className="space-y-4">
+            <form onSubmit={handleLoginSubmit} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-                  Shared Site Password
+                <label className="block text-[9px] font-minecraft uppercase tracking-wider text-[#aaaaaa] mb-1">
+                  Site Password:
                 </label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter site password"
-                    className="w-full bg-[#0b0d13] border border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                    autoFocus
-                  />
-                </div>
-                <p className="mt-1 text-[11px] text-slate-500">
-                  Default: <code className="text-slate-400">minecraft</code> (or set via <code className="text-slate-400">VITE_SITE_PASSWORD</code>)
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="minecraft"
+                  className="mc-input w-full px-3 py-2 text-xs"
+                  autoFocus
+                />
+                <p className="mt-1 text-[9px] font-pixel text-[#777777]">
+                  Default: <span className="text-[#ffff55]">minecraft</span>
                 </p>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-                  Your Minecraft Display Name
+                <label className="block text-[9px] font-minecraft uppercase tracking-wider text-[#aaaaaa] mb-1">
+                  Your Minecraft Player Name:
                 </label>
-                <div className="relative">
-                  <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="e.g. Calvin"
-                    className="w-full bg-[#0b0d13] border border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                  />
-                </div>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="e.g. Calvin"
+                  className="mc-input w-full px-3 py-2 text-xs"
+                />
               </div>
 
               <button
                 type="submit"
-                className="w-full mt-2 py-3 px-4 rounded-xl text-sm font-semibold text-black bg-cyan-400 hover:bg-cyan-300 shadow-lg shadow-cyan-500/25 transition active:scale-[0.99]"
+                className="mc-btn-emerald w-full mt-2 py-2.5 text-xs tracking-wider"
               >
-                Enter Tracker
+                JOIN WORLD
               </button>
             </form>
           </div>

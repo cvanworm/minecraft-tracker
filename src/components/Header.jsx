@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useItems } from '../context/ItemsContext';
 import { RARITIES, RARITY_COLORS } from '../data/itemsData';
-import { Trophy, User, ArrowRightLeft, Radio, CheckCircle2, ShieldCheck, Flame } from 'lucide-react';
+import { Trophy, ArrowRightLeft, Radio, CheckCircle2, User } from 'lucide-react';
 
 export default function Header() {
   const { currentUser, setShowSwitchModal } = useAuth();
@@ -17,119 +17,125 @@ export default function Header() {
   } = stats;
 
   return (
-    <header className="border-b border-[#1f2433] bg-[#0e1118]/90 backdrop-blur-md sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+    <header className="border-b-4 border-black bg-[#23201e] shadow-2xl relative z-40">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4">
         
         {/* Top row: Brand + Sync Status + User profile */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 p-0.5 shadow-lg shadow-cyan-500/20">
-              <div className="w-full h-full bg-[#0b0d13] rounded-[10px] flex items-center justify-center text-xl">
-                ⛏️
-              </div>
+            <div className="w-10 h-10 bg-[#383838] border-2 border-black shadow-[inset_2px_2px_0px_#636363,inset_-2px_-2px_0px_#1c1c1c] flex items-center justify-center text-xl shrink-0">
+              ⛏️
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
-                  Minecraft All-Items Tracker
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-sm sm:text-base font-bold font-minecraft tracking-wider text-white mc-shadow">
+                  MINECRAFT ALL-ITEMS
                 </h1>
-                <span className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase rounded-full bg-slate-800 text-slate-300 border border-slate-700">
-                  Vanilla 1.21+
+                <span className="px-2 py-0.5 text-[9px] font-minecraft bg-[#383838] text-[#ffff55] border-2 border-black mc-shadow-sm">
+                  1.21+
                 </span>
               </div>
-              <p className="text-xs text-slate-400">Survival Item Collection Co-op</p>
+              <p className="text-[11px] font-pixel text-[#aaaaaa] mc-shadow-sm mt-0.5">
+                Survival Item Collection Challenge
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Sync status pill */}
             <div
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
+              className={`flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-minecraft border-2 border-black shadow-sm ${
                 syncStatus === 'connected'
-                  ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/60'
+                  ? 'bg-[#153818] text-[#55ff55]'
                   : syncStatus === 'syncing' || syncStatus === 'connecting'
-                  ? 'bg-amber-950/60 text-amber-400 border-amber-800/60 animate-pulse'
-                  : 'bg-slate-800/80 text-slate-400 border-slate-700'
+                  ? 'bg-[#383015] text-[#ffff55] animate-pulse'
+                  : 'bg-[#2b2b2b] text-[#aaaaaa]'
               }`}
-              title={
-                syncStatus === 'connected'
-                  ? 'Realtime Supabase sync connected'
-                  : syncStatus === 'local-only'
-                  ? 'Operating in local storage mode'
-                  : 'Syncing changes...'
-              }
             >
               <span
-                className={`w-2 h-2 rounded-full ${
+                className={`w-2 h-2 ${
                   syncStatus === 'connected'
-                    ? 'bg-emerald-400'
+                    ? 'bg-[#55ff55]'
                     : syncStatus === 'syncing' || syncStatus === 'connecting'
-                    ? 'bg-amber-400'
-                    : 'bg-slate-400'
+                    ? 'bg-[#ffff55]'
+                    : 'bg-[#aaaaaa]'
                 }`}
               />
-              <span className="hidden sm:inline">
+              <span className="mc-shadow-sm hidden sm:inline">
                 {syncStatus === 'connected'
-                  ? 'Realtime Live'
+                  ? 'ONLINE'
                   : syncStatus === 'local-only'
-                  ? 'Local Mode'
-                  : 'Connecting...'}
+                  ? 'LOCAL'
+                  : 'SYNCING...'}
               </span>
             </div>
 
-            {/* Current user pill */}
-            <div className="flex items-center gap-1.5 bg-[#161a26] border border-[#232838] pl-2.5 pr-1.5 py-1 rounded-xl">
-              <User className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="text-xs font-medium text-slate-200">{currentUser || 'Player'}</span>
+            {/* Current user nametag */}
+            <div className="flex items-center gap-2 bg-[#1b1b1b] border-2 border-black px-2.5 py-1 shadow-[inset_1px_1px_0px_#333]">
+              <span className="text-[10px] font-pixel text-[#55ffff] mc-shadow-sm flex items-center gap-1">
+                <User className="w-3 h-3" />
+                {currentUser || 'Steve'}
+              </span>
               <button
                 onClick={() => setShowSwitchModal(true)}
                 title="Switch Player"
-                className="ml-1 p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-cyan-300 transition"
+                className="mc-btn px-1.5 py-0.5 text-[9px] text-[#ffffff] hover:text-[#ffffa0]"
               >
-                <ArrowRightLeft className="w-3 h-3" />
+                <ArrowRightLeft className="w-2.5 h-2.5 inline" />
               </button>
             </div>
           </div>
         </div>
 
-        {/* Middle row: Overall Progress Bar */}
-        <div className="bg-[#141824] border border-[#1f2438] rounded-xl p-4 shadow-sm mb-4">
+        {/* Middle row: Authentic Minecraft XP Progress Bar */}
+        <div className="mc-panel p-3 sm:p-4 mb-4">
           <div className="flex flex-wrap items-end justify-between gap-2 mb-2">
             <div>
-              <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
-                Total Collection Progress
+              <span className="text-[10px] sm:text-xs font-minecraft uppercase tracking-wider text-[#aaaaaa] mc-shadow-sm">
+                ITEMS COLLECTED
               </span>
-              <div className="flex items-baseline gap-2 mt-0.5">
-                <span className="text-2xl font-extrabold text-white tracking-tight">
+              <div className="flex items-baseline gap-2 mt-1">
+                <span className="text-xl sm:text-2xl font-bold font-minecraft text-[#55ff55] mc-shadow-green">
                   {completedCount.toLocaleString()}
                 </span>
-                <span className="text-sm font-semibold text-slate-400">
-                  / {totalItems.toLocaleString()} items
+                <span className="text-xs font-minecraft text-[#888888] mc-shadow-sm">
+                  / {totalItems.toLocaleString()}
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <span className="text-2xl font-black text-cyan-400 font-mono">
+            <div className="text-right">
+              <span className="text-xl sm:text-2xl font-bold font-minecraft text-[#ffff55] mc-shadow-yellow">
                 {percentage}%
               </span>
             </div>
           </div>
 
-          {/* Progress bar line */}
-          <div className="w-full h-3 bg-[#0b0d13] rounded-full overflow-hidden border border-slate-800/80 p-0.5">
+          {/* Minecraft XP Bar Graphic */}
+          <div className="relative w-full h-5 bg-[#090e06] border-2 border-black p-0.5 overflow-hidden shadow-[inset_1px_1px_0px_#000]">
+            {/* XP segments background */}
             <div
-              className="h-full bg-gradient-to-r from-emerald-500 via-cyan-400 to-amber-400 rounded-full transition-all duration-500 ease-out shadow-sm"
-              style={{ width: `${Math.max(percentage, 0.5)}%` }}
+              className="h-full bg-gradient-to-r from-[#55ff55] via-[#80ff20] to-[#ffff55] transition-all duration-300 relative"
+              style={{
+                width: `${Math.max(percentage, 0.5)}%`,
+                backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 18px, rgba(0,0,0,0.35) 18px, rgba(0,0,0,0.35) 20px)'
+              }}
             />
+
+            {/* Level number in center */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <span className="font-minecraft text-[10px] sm:text-xs font-bold mc-xp-stroke tracking-widest">
+                LVL {completedCount}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Bottom row: Rarity Breakdown Gauges & Player Leaderboard */}
+        {/* Bottom row: Rarity Tiers & Player Leaderboard */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
           
-          {/* Rarity Tiers Counters (Spans 2 columns on lg) */}
-          <div className="lg:col-span-2 grid grid-cols-2 sm:grid-cols-5 gap-2 bg-[#141824] border border-[#1f2438] p-3 rounded-xl">
+          {/* Rarity Tiers Counters */}
+          <div className="lg:col-span-2 grid grid-cols-2 sm:grid-cols-5 gap-2 mc-panel p-2.5">
             {RARITIES.map((tier) => {
               const tierStats = rarityBreakdown[tier] || { total: 0, completed: 0 };
               const tierPct = tierStats.total > 0 ? Math.round((tierStats.completed / tierStats.total) * 100) : 0;
@@ -138,23 +144,23 @@ export default function Header() {
               return (
                 <div
                   key={tier}
-                  className="flex flex-col justify-between p-2 rounded-lg bg-[#0e111a] border border-[#1d2233]"
+                  className="mc-slot p-2 flex flex-col justify-between"
                 >
                   <div className="flex items-center justify-between gap-1 mb-1">
-                    <span className="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
-                      <span className={`w-1.5 h-1.5 rounded-full ${colorInfo.dot}`} />
+                    <span className={`text-[9px] font-minecraft ${colorInfo.text} mc-shadow-sm`}>
                       {tier}
                     </span>
-                    <span className="text-[10px] font-mono text-slate-400">{tierPct}%</span>
+                    <span className="text-[8px] font-pixel text-[#888888]">{tierPct}%</span>
                   </div>
 
-                  <div className="text-xs font-semibold text-slate-200 mb-1.5">
-                    {tierStats.completed} <span className="text-[10px] text-slate-500">/ {tierStats.total}</span>
+                  <div className="text-[10px] font-pixel text-[#ffffff] mc-shadow-sm mb-1.5">
+                    {tierStats.completed} <span className="text-[#666666]">/ {tierStats.total}</span>
                   </div>
 
-                  <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
+                  {/* Mini XP bar */}
+                  <div className="w-full h-1.5 bg-[#050804] border border-black overflow-hidden">
                     <div
-                      className="h-full rounded-full transition-all duration-300"
+                      className="h-full transition-all duration-300"
                       style={{
                         width: `${tierPct}%`,
                         backgroundColor: colorInfo.accent,
@@ -166,36 +172,36 @@ export default function Header() {
             })}
           </div>
 
-          {/* Friendly Player Leaderboard */}
-          <div className="bg-[#141824] border border-[#1f2438] p-3 rounded-xl flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <Trophy className="w-3.5 h-3.5 text-amber-400" />
-                Player Leaderboard
+          {/* Minecraft Tab List / Leaderboard */}
+          <div className="mc-panel p-2.5 flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[10px] font-minecraft text-[#ffff55] mc-shadow-yellow flex items-center gap-1.5">
+                <Trophy className="w-3 h-3 text-[#ffaa00]" />
+                LEADERBOARD
               </span>
-              <span className="text-[10px] text-slate-500">
-                {leaderboard.length} {leaderboard.length === 1 ? 'player' : 'players'}
+              <span className="text-[9px] font-pixel text-[#888888]">
+                {leaderboard.length} PLAYERS
               </span>
             </div>
 
             {leaderboard.length === 0 ? (
-              <div className="text-xs text-slate-500 italic py-1">
-                No items collected yet. Check off your first item to take the lead!
+              <div className="text-[10px] font-pixel text-[#777777] italic py-1 mc-shadow-sm">
+                No items collected yet.
               </div>
             ) : (
-              <div className="flex flex-wrap gap-2 max-h-16 overflow-y-auto pr-1">
+              <div className="flex flex-wrap gap-1.5 max-h-16 overflow-y-auto pr-1">
                 {leaderboard.slice(0, 4).map((p, idx) => (
                   <div
                     key={p.name}
-                    className={`flex items-center gap-2 px-2.5 py-1 rounded-lg text-xs font-medium border ${
+                    className={`flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-pixel border-2 border-black ${
                       idx === 0
-                        ? 'bg-amber-950/40 border-amber-800/50 text-amber-300'
-                        : 'bg-[#0f121b] border-slate-800 text-slate-300'
+                        ? 'bg-[#3b2d0b] text-[#ffff55]'
+                        : 'bg-[#181818] text-[#cccccc]'
                     }`}
                   >
                     <span>{idx === 0 ? '👑' : `#${idx + 1}`}</span>
-                    <span className="font-semibold">{p.name}</span>
-                    <span className="text-[10px] opacity-75 font-mono">({p.count})</span>
+                    <span className="font-bold mc-shadow-sm">{p.name}</span>
+                    <span className="text-[#ffaa00] font-minecraft text-[8px]">({p.count})</span>
                   </div>
                 ))}
               </div>

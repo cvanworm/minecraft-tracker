@@ -1,7 +1,6 @@
 import React from 'react';
 import { useItems } from '../context/ItemsContext';
 import ItemCard from './ItemCard';
-import { ChevronDown, ChevronRight, CheckCircle2 } from 'lucide-react';
 
 export default function CategorySection({ categoryName, items }) {
   const { collapsedCategories, toggleCategoryCollapse, stats } = useItems();
@@ -12,55 +11,50 @@ export default function CategorySection({ categoryName, items }) {
   const isAllDone = catStats.total > 0 && catStats.completed === catStats.total;
 
   return (
-    <div className="border border-[#1f2438] bg-[#0f121b]/80 rounded-2xl overflow-hidden shadow-sm">
+    <div className="mc-panel mb-3 overflow-hidden">
       {/* Category Header */}
       <button
         type="button"
         onClick={() => toggleCategoryCollapse(categoryName)}
-        className="w-full flex items-center justify-between p-4 bg-[#141824] hover:bg-[#181d2c] transition text-left"
+        className="w-full flex items-center justify-between p-2.5 sm:p-3 bg-[#332f2c] hover:bg-[#3d3834] border-b-2 border-black transition text-left"
       >
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="text-slate-400">
-            {isCollapsed ? (
-              <ChevronRight className="w-5 h-5" />
-            ) : (
-              <ChevronDown className="w-5 h-5" />
-            )}
-          </div>
+        <div className="flex items-center gap-2.5 min-w-0">
+          <span className="font-minecraft text-xs text-[#ffff55] mc-shadow-yellow w-5 text-center shrink-0">
+            {isCollapsed ? '[+]' : '[-]'}
+          </span>
 
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm sm:text-base font-bold text-white tracking-tight truncate">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-xs sm:text-sm font-bold font-minecraft text-white mc-shadow truncate">
                 {categoryName}
               </h3>
               {isAllDone && (
-                <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-800/80 px-2 py-0.5 rounded-full">
-                  <CheckCircle2 className="w-3 h-3" /> Done
+                <span className="text-[9px] font-minecraft text-[#55ff55] bg-[#122e15] border border-black px-1.5 py-0.2 mc-shadow-green">
+                  COMPLETE
                 </span>
               )}
             </div>
 
-            <p className="text-xs text-slate-400 mt-0.5">
-              <span className="font-semibold text-slate-200">{catStats.completed}</span> of{' '}
-              <span className="text-slate-200">{catStats.total}</span> collected ({pct}%)
+            <p className="text-[10px] font-pixel text-[#aaaaaa] mt-0.5 mc-shadow-sm">
+              <span className="text-[#55ff55]">{catStats.completed}</span> / {catStats.total} COLLECTED ({pct}%)
             </p>
           </div>
         </div>
 
         {/* Mini progress bar on the right */}
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="w-20 sm:w-28 h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800 hidden sm:block">
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="w-16 sm:w-24 h-2.5 bg-[#0a0f07] border border-black overflow-hidden hidden sm:block">
             <div
               className={`h-full transition-all duration-300 ${
                 isAllDone
-                  ? 'bg-emerald-400'
-                  : 'bg-gradient-to-r from-cyan-400 to-emerald-400'
+                  ? 'bg-[#55ff55]'
+                  : 'bg-gradient-to-r from-[#55ff55] to-[#ffff55]'
               }`}
               style={{ width: `${pct}%` }}
             />
           </div>
 
-          <span className="text-xs font-mono font-bold text-slate-400 w-10 text-right">
+          <span className="text-[10px] font-minecraft text-[#ffff55] w-9 text-right mc-shadow-yellow">
             {pct}%
           </span>
         </div>
@@ -68,13 +62,13 @@ export default function CategorySection({ categoryName, items }) {
 
       {/* Item List (Grid) */}
       {!isCollapsed && (
-        <div className="p-3 sm:p-4 bg-[#0d1017]">
+        <div className="p-2 sm:p-2.5 bg-[#181512]">
           {items.length === 0 ? (
-            <div className="py-6 text-center text-xs text-slate-500 italic">
+            <div className="py-4 text-center text-[10px] font-pixel text-[#777777] italic">
               No items match your active filters in this category.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-1.5 sm:gap-2">
               {items.map((item) => (
                 <ItemCard key={item.id} item={item} />
               ))}
