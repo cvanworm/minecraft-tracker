@@ -6,7 +6,7 @@ import ItemIcon from './ItemIcon';
 import { Check, ExternalLink, Crosshair } from 'lucide-react';
 
 export default function ItemCard({ item }) {
-  const { currentUser } = useAuth();
+  const { currentUser, hasScope } = useAuth();
   const { progress, toggleComplete, toggleClaim } = useItems();
 
   const itemState = progress[item.id] || {};
@@ -45,6 +45,7 @@ export default function ItemCard({ item }) {
         <button
           type="button"
           onClick={() => toggleComplete(item.id)}
+          disabled={!hasScope('progress:write')}
           aria-label={isCompleted ? `Unmark ${item.name}` : `Mark ${item.name} as collected`}
           className={`w-7 h-7 flex items-center justify-center shrink-0 border-2 border-black transition-all ${
             isCompleted
@@ -107,6 +108,7 @@ export default function ItemCard({ item }) {
           <button
             type="button"
             onClick={() => toggleClaim(item.id)}
+            disabled={!hasScope('progress:write')}
             title={isClaimedByMe ? 'Release hunt' : 'Claim to hunt this item'}
             className={`px-2 py-1 text-[9px] font-minecraft border-2 border-black transition ${
               isClaimedByMe

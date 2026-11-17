@@ -2,10 +2,10 @@ import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useItems } from '../context/ItemsContext';
 import { RARITIES, RARITY_COLORS } from '../data/itemsData';
-import { Trophy, ArrowRightLeft, Radio, CheckCircle2, User } from 'lucide-react';
+import { Trophy, ArrowRightLeft, User, KeyRound, LogOut } from 'lucide-react';
 
-export default function Header() {
-  const { currentUser, setShowSwitchModal } = useAuth();
+export default function Header({ onOpenAccess }) {
+  const { currentUser, setShowSwitchModal, logout } = useAuth();
   const { stats, syncStatus } = useItems();
 
   const {
@@ -66,11 +66,12 @@ export default function Header() {
                   ? 'ONLINE'
                   : syncStatus === 'local-only'
                   ? 'LOCAL'
-                  : 'SYNCING...'}
+                  : syncStatus === 'error' ? 'SYNC ERROR' : 'SYNCING...'}
               </span>
             </div>
 
             {/* Current user nametag */}
+            <button onClick={onOpenAccess} className="mc-btn px-2 py-1 text-[10px] flex items-center gap-1" title="Manage API keys"><KeyRound className="w-3 h-3" /> API KEYS</button>
             <div className="flex items-center gap-2 bg-[#1b1b1b] border-2 border-black px-2.5 py-1 shadow-[inset_1px_1px_0px_#333]">
               <span className="text-[10px] font-pixel text-[#55ffff] mc-shadow-sm flex items-center gap-1">
                 <User className="w-3 h-3" />
@@ -84,6 +85,7 @@ export default function Header() {
                 <ArrowRightLeft className="w-2.5 h-2.5 inline" />
               </button>
             </div>
+            <button onClick={logout} className="mc-btn px-2 py-1" title="Sign out" aria-label="Sign out"><LogOut className="w-3 h-3" /></button>
           </div>
         </div>
 

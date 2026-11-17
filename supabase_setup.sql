@@ -1,33 +1,17 @@
--- ==============================================================================
--- Minecraft "All Items" Vanilla Survival Tracker - Supabase SQL Setup
--- Run this in the Supabase Dashboard -> SQL Editor -> Click "Run"
--- ==============================================================================
-
--- 1. Create table for item progress
-CREATE TABLE IF NOT EXISTS public.minecraft_item_progress (
-  item_id TEXT PRIMARY KEY,
-  is_completed BOOLEAN NOT NULL DEFAULT FALSE,
-  completed_by TEXT,
-  completed_at TIMESTAMPTZ,
-  claimed_by TEXT,
-  claimed_at TIMESTAMPTZ,
-  updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW())
-);
-
--- 2. Enable Row Level Security (RLS)
-ALTER TABLE public.minecraft_item_progress ENABLE ROW LEVEL SECURITY;
-
--- 3. Policy: Allow public read and write access for authorized tracker players
-CREATE POLICY "Allow public all access on minecraft_item_progress" 
-  ON public.minecraft_item_progress 
-  FOR ALL 
-  TO anon, authenticated
-  USING (true)
-  WITH CHECK (true);
-
--- 4. Enable Supabase Realtime broadcast for live updates
-ALTER PUBLICATION supabase_realtime ADD TABLE public.minecraft_item_progress;
-
--- 5. Optional Index for fast lookups
-CREATE INDEX IF NOT EXISTS idx_mc_progress_completed ON public.minecraft_item_progress(is_completed);
-CREATE INDEX IF NOT EXISTS idx_mc_progress_claimed ON public.minecraft_item_progress(claimed_by);
+-- Migration for PREVIOUS Supabase installations only.
+-- The tracker now uses its authenticated Node backend and SQLite.
+-- This removes the old public access without deleting any progress data.
+-- Run in the existing project's SQL editor before retiring the old frontend.
+DO $$
+DECLARE entry RECORD;
+BEGIN
+  IF to_regclass('public.minecraft_item_progress') IS NOT NULL THEN
+    ALTER TABLE public.minecraft_item_progress ENABLE ROW LEVEL SECURITY;
+    FOR entry IN SELECT policyname FROM pg_policies
+      WHERE schemaname = 'public' AND tablename = 'minecraft_item_progress'
+    LOOP
+      EXECUTE format('DROP POLICY %I ON public.minecraft_item_progress', entry.policyname);
+    END LOOP;
+    REVOKE ALL ON public.minecraft_item_progress FROM anon, authenticated, PUBLIC;
+  END IF;
+END $$;

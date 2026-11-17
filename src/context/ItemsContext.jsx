@@ -1,303 +1,116 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { ITEMS, ITEMS_BY_ID, CATEGORIES, RARITIES } from '../data/itemsData';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { api } from '../lib/api';
 import { useAuth } from './AuthContext';
 
 const ItemsContext = createContext();
-
-const LOCAL_STORAGE_PROGRESS_KEY = 'mc_tracker_progress_v1';
+const LEGACY_KEY = 'mc_tracker_progress_v1';
 
 export function ItemsProvider({ children }) {
-  const { currentUser } = useAuth();
-
-  // Progress map: itemId -> { is_completed, completed_by, completed_at, claimed_by, claimed_at }
-  const [progress, setProgress] = useState(() => {
-    try {
-      const saved = localStorage.getItem(LOCAL_STORAGE_PROGRESS_KEY);
-      return saved ? JSON.parse(saved) : {};
-    } catch (e) {
-      console.warn('Failed reading progress from localStorage:', e);
-      return {};
-    }
-  });
-
-  const [isLoadingProgress, setIsLoadingProgress] = useState(isSupabaseConfigured);
-  const [syncStatus, setSyncStatus] = useState(isSupabaseConfigured ? 'connecting' : 'local-only');
+  const { user, currentUser, hasScope } = useAuth();
+  const actorRef = useRef(null);
+  actorRef.current = user?.id;
+  const [progress, setProgress] = useState({});
+  const [isLoadingProgress, setIsLoadingProgress] = useState(false);
+  const [syncStatus, setSyncStatus] = useState('disconnected');
   const [toast, setToast] = useState(null);
-  const [lastAction, setLastAction] = useState(null);
-
-  // Filters state
+  const [legacyAvailable, setLegacyAvailable] = useState(() => {
+    try { return Object.keys(JSON.parse(localStorage.getItem(LEGACY_KEY) || '{}')).length > 0 && !localStorage.getItem('mc_tracker_imported_v2'); }
+    catch { return false; }
+  });
+  const canImportLegacy = legacyAvailable && user?.authMethod === 'password';
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedRarities, setSelectedRarities] = useState(RARITIES);
-  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'remaining', 'completed', 'claimed_by_me'
-  const [viewMode, setViewMode] = useState('checklist'); // 'checklist' | 'completed'
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [viewMode, setViewMode] = useState('checklist');
   const [collapsedCategories, setCollapsedCategories] = useState({});
 
-  // Sync with Supabase on mount
+  // Data comes only from the authenticated server. An unavailable server never
+  // silently falls back to independent browser progress.
   useEffect(() => {
-    if (!isSupabaseConfigured || !supabase) {
-      setSyncStatus('local-only');
-      return;
-    }
-
-    let isMounted = true;
-
-    async function fetchInitialProgress() {
+    setProgress({}); setToast(null);
+    if (!user) { setSyncStatus('disconnected'); setIsLoadingProgress(false); return; }
+    if (!hasScope('progress:read')) { setSyncStatus('error'); return; }
+    let active = true;
+    const controller = new AbortController();
+    setIsLoadingProgress(true); setSyncStatus('connecting');
+    async function refresh() {
       try {
-        setSyncStatus('syncing');
-        const { data, error } = await supabase
-          .from('minecraft_item_progress')
-          .select('*');
-
-        if (error) {
-          console.error('Error fetching Supabase progress:', error);
-          setSyncStatus('error');
-          return;
-        }
-
-        if (isMounted && data) {
-          const remoteProgress = {};
-          data.forEach((row) => {
-            remoteProgress[row.item_id] = {
-              is_completed: Boolean(row.is_completed),
-              completed_by: row.completed_by || null,
-              completed_at: row.completed_at || null,
-              claimed_by: row.claimed_by || null,
-              claimed_at: row.claimed_at || null,
-            };
-          });
-
-          setProgress((prev) => {
-            const merged = { ...prev, ...remoteProgress };
-            try {
-              localStorage.setItem(LOCAL_STORAGE_PROGRESS_KEY, JSON.stringify(merged));
-            } catch (e) {}
-            return merged;
-          });
+        const data = await api('/api/v1/progress', { signal: controller.signal });
+        if (active) {
+          setProgress(previous => Object.fromEntries(Object.entries(data.progress).map(([id, state]) =>
+            [id, (previous[id]?.revision ?? 0) > state.revision ? previous[id] : state])));
           setSyncStatus('connected');
         }
-      } catch (err) {
-        console.error('Supabase fetch failed:', err);
-        setSyncStatus('error');
-      } finally {
-        if (isMounted) setIsLoadingProgress(false);
-      }
+      } catch (error) { if (active && error.name !== 'AbortError') setSyncStatus('error'); }
+      finally { if (active) setIsLoadingProgress(false); }
     }
+    refresh();
+    const timer = setInterval(refresh, 3000);
+    return () => { active = false; controller.abort(); clearInterval(timer); };
+  }, [user]);
 
-    fetchInitialProgress();
-
-    // Subscribe to realtime changes
-    const channel = supabase
-      .channel('public:minecraft_item_progress')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'minecraft_item_progress' },
-        (payload) => {
-          if (!payload.new && !payload.old) return;
-
-          const updatedRow = payload.new;
-          if (updatedRow && updatedRow.item_id) {
-            setProgress((prev) => {
-              const updated = {
-                ...prev,
-                [updatedRow.item_id]: {
-                  is_completed: Boolean(updatedRow.is_completed),
-                  completed_by: updatedRow.completed_by || null,
-                  completed_at: updatedRow.completed_at || null,
-                  claimed_by: updatedRow.claimed_by || null,
-                  claimed_at: updatedRow.claimed_at || null,
-                },
-              };
-              try {
-                localStorage.setItem(LOCAL_STORAGE_PROGRESS_KEY, JSON.stringify(updated));
-              } catch (e) {}
-              return updated;
-            });
-          }
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          setSyncStatus('connected');
-        }
-      });
-
-    return () => {
-      isMounted = false;
-      supabase.removeChannel(channel);
-    };
+  const applyState = useCallback((result, actorId) => {
+    if (actorRef.current !== actorId) return;
+    setProgress(previous => (previous[result.item_id]?.revision ?? 0) > result.state.revision ? previous
+      : { ...previous, [result.item_id]: result.state });
   }, []);
 
-  // Save progress locally when updated
-  const saveProgressState = useCallback((newProgress) => {
-    setProgress(newProgress);
+  const undoAction = useCallback(async (itemId, undoId) => {
+    const actorId = actorRef.current;
     try {
-      localStorage.setItem(LOCAL_STORAGE_PROGRESS_KEY, JSON.stringify(newProgress));
-    } catch (e) {}
+      const result = await api(`/api/v1/progress/${itemId}/undo`, { method: 'POST', body: { undo_id: undoId } });
+      applyState(result, actorId);
+      if (actorRef.current === actorId) setToast(null);
+    } catch (error) { if (actorRef.current === actorId) setToast({ id: Date.now(), message: error.message }); }
+  }, [applyState]);
+
+  const mutate = useCallback(async (itemId, change) => {
+    const actorId = user?.id;
+    if (!actorId || !hasScope('progress:write')) {
+      setToast({ id: Date.now(), message: 'This key is read-only. Sign in with your account to make changes.' });
+      return null;
+    }
+    try {
+      const result = await api(`/api/v1/progress/${itemId}`, { method: 'PATCH', body: {
+        ...change, expected_revision: progress[itemId]?.revision ?? 0,
+      } });
+      applyState(result, actorId);
+      if (actorRef.current !== actorId) return null;
+      setSyncStatus('connected');
+      return result;
+    } catch (error) {
+      if (actorRef.current === actorId) setToast({ id: Date.now(), message: error.message });
+      return null;
+    }
+  }, [user, progress, applyState, hasScope]);
+
+  const toggleComplete = useCallback(async itemId => {
+    const result = await mutate(itemId, { is_completed: !progress[itemId]?.is_completed });
+    if (!result) return;
+    const itemName = ITEMS_BY_ID[itemId]?.name ?? itemId;
+    if (result.state.is_completed) confetti({ particleCount: 40, spread: 60, origin: { y: .85 }, colors: ['#38bdf8', '#22c55e', '#f59e0b', '#c084fc'] });
+    setToast({ id: Date.now(), message: result.state.is_completed ? `Marked "${itemName}" as collected!` : `Unmarked "${itemName}"`,
+      actionLabel: 'Undo', onUndo: () => undoAction(itemId, result.undo_id) });
+  }, [progress, mutate, undoAction]);
+
+  const toggleClaim = useCallback(async itemId => {
+    const result = await mutate(itemId, { claimed: progress[itemId]?.claimed_by !== currentUser });
+    if (!result) return;
+    const itemName = ITEMS_BY_ID[itemId]?.name ?? itemId;
+    setToast({ id: Date.now(), message: result.state.claimed_by ? `You are now hunting for "${itemName}"` : `Released hunt claim for "${itemName}"` });
+  }, [progress, currentUser, mutate]);
+
+  const importLegacy = useCallback(async () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(LEGACY_KEY) || '{}');
+      const result = await api('/api/v1/progress/import', { method: 'POST', body: { progress: saved } });
+      localStorage.setItem('mc_tracker_imported_v2', 'true'); setLegacyAvailable(false);
+      setToast({ id: Date.now(), message: `Imported ${result.imported} saved items. Shared progress will refresh shortly.` });
+    } catch (error) { setToast({ id: Date.now(), message: error.message }); }
   }, []);
-
-  // Toggle item completion
-  const toggleComplete = useCallback(
-    async (itemId) => {
-      const current = progress[itemId] || {};
-      const wasCompleted = Boolean(current.is_completed);
-      const isNowCompleted = !wasCompleted;
-
-      const previousState = { ...current };
-
-      const updatedItemState = {
-        is_completed: isNowCompleted,
-        completed_by: isNowCompleted ? (currentUser || 'Anonymous') : null,
-        completed_at: isNowCompleted ? new Date().toISOString() : null,
-        claimed_by: isNowCompleted ? null : current.claimed_by, // clear hunting claim once completed
-        claimed_at: isNowCompleted ? null : current.claimed_at,
-      };
-
-      const newProgress = {
-        ...progress,
-        [itemId]: updatedItemState,
-      };
-
-      saveProgressState(newProgress);
-
-      const itemName = ITEMS_BY_ID[itemId]?.name || itemId;
-
-      // Milestone or celebratory confetti on completion
-      if (isNowCompleted) {
-        confetti({
-          particleCount: 40,
-          spread: 60,
-          origin: { y: 0.85 },
-          colors: ['#38bdf8', '#22c55e', '#f59e0b', '#c084fc'],
-        });
-      }
-
-      // Record for undo
-      setLastAction({
-        itemId,
-        previousState,
-        actionType: isNowCompleted ? 'completed' : 'uncompleted',
-        itemName,
-      });
-
-      // Show Undo Toast
-      setToast({
-        id: Date.now(),
-        message: isNowCompleted
-          ? `Marked "${itemName}" as collected!`
-          : `Unmarked "${itemName}"`,
-        actionLabel: 'Undo',
-        onUndo: () => undoAction(itemId, previousState, itemName),
-      });
-
-      // Sync to Supabase
-      if (isSupabaseConfigured && supabase) {
-        try {
-          const { error } = await supabase.from('minecraft_item_progress').upsert({
-            item_id: itemId,
-            is_completed: updatedItemState.is_completed,
-            completed_by: updatedItemState.completed_by,
-            completed_at: updatedItemState.completed_at,
-            claimed_by: updatedItemState.claimed_by,
-            claimed_at: updatedItemState.claimed_at,
-            updated_at: new Date().toISOString(),
-          });
-
-          if (error) console.error('Supabase upsert error:', error);
-        } catch (err) {
-          console.error('Failed to sync toggleComplete:', err);
-        }
-      }
-    },
-    [progress, currentUser, saveProgressState]
-  );
-
-  // Toggle Hunting / Claim status
-  const toggleClaim = useCallback(
-    async (itemId) => {
-      const current = progress[itemId] || {};
-      const isClaimedByMe = current.claimed_by === currentUser;
-      const isNowClaimed = !isClaimedByMe;
-
-      const updatedItemState = {
-        ...current,
-        claimed_by: isNowClaimed ? (currentUser || 'Anonymous') : null,
-        claimed_at: isNowClaimed ? new Date().toISOString() : null,
-      };
-
-      const newProgress = {
-        ...progress,
-        [itemId]: updatedItemState,
-      };
-
-      saveProgressState(newProgress);
-
-      const itemName = ITEMS_BY_ID[itemId]?.name || itemId;
-
-      setToast({
-        id: Date.now(),
-        message: isNowClaimed
-          ? `You are now hunting for "${itemName}"`
-          : `Released hunt claim for "${itemName}"`,
-      });
-
-      // Sync to Supabase
-      if (isSupabaseConfigured && supabase) {
-        try {
-          const { error } = await supabase.from('minecraft_item_progress').upsert({
-            item_id: itemId,
-            is_completed: Boolean(updatedItemState.is_completed),
-            completed_by: updatedItemState.completed_by || null,
-            completed_at: updatedItemState.completed_at || null,
-            claimed_by: updatedItemState.claimed_by,
-            claimed_at: updatedItemState.claimed_at,
-            updated_at: new Date().toISOString(),
-          });
-          if (error) console.error('Supabase claim upsert error:', error);
-        } catch (err) {
-          console.error('Failed to sync toggleClaim:', err);
-        }
-      }
-    },
-    [progress, currentUser, saveProgressState]
-  );
-
-  // Undo action
-  const undoAction = useCallback(
-    async (itemId, previousState, itemName) => {
-      setProgress((prev) => {
-        const reverted = {
-          ...prev,
-          [itemId]: previousState,
-        };
-        try {
-          localStorage.setItem(LOCAL_STORAGE_PROGRESS_KEY, JSON.stringify(reverted));
-        } catch (e) {}
-        return reverted;
-      });
-
-      setToast(null);
-
-      if (isSupabaseConfigured && supabase) {
-        try {
-          await supabase.from('minecraft_item_progress').upsert({
-            item_id: itemId,
-            is_completed: Boolean(previousState.is_completed),
-            completed_by: previousState.completed_by || null,
-            completed_at: previousState.completed_at || null,
-            claimed_by: previousState.claimed_by || null,
-            claimed_at: previousState.claimed_at || null,
-            updated_at: new Date().toISOString(),
-          });
-        } catch (e) {
-          console.error('Undo sync error:', e);
-        }
-      }
-    },
-    []
-  );
 
   // Toggle category collapse
   const toggleCategoryCollapse = useCallback((catName) => {
@@ -442,6 +255,8 @@ export function ItemsProvider({ children }) {
         stats,
         syncStatus,
         isLoadingProgress,
+        canImportLegacy,
+        importLegacy,
         toggleComplete,
         toggleClaim,
         toast,

@@ -1,171 +1,74 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Lock, User, AlertCircle } from 'lucide-react';
 
 export default function AuthModal() {
-  const {
-    isAuthenticated,
-    currentUser,
-    login,
-    switchUser,
-    showSwitchModal,
-    setShowSwitchModal,
-  } = useAuth();
-
-  const [password, setPassword] = useState('');
+  const { user, isAuthenticated, setupRequired, authError, login, loginWithKey, setup, switchUser, showSwitchModal, setShowSwitchModal } = useAuth();
+  const [initialCodes] = useState(() => Object.fromEntries(new URLSearchParams(window.location.hash.slice(1))));
+  const [mode, setMode] = useState('login');
   const [username, setUsername] = useState('');
-  const [newUsername, setNewUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [apiKey, setApiKey] = useState('');
+  const [setupToken, setSetupToken] = useState(initialCodes.setup ?? '');
   const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    const readSetupCode = () => {
+      const code = new URLSearchParams(window.location.hash.slice(1)).get('setup');
+      if (code) {
+        setSetupToken(code);
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+    };
+    readSetupCode();
+    window.addEventListener('hashchange', readSetupCode);
+    return () => window.removeEventListener('hashchange', readSetupCode);
+  }, []);
+  const currentMode = setupRequired ? 'setup' : showSwitchModal && user?.authMethod === 'password' ? 'player' : mode;
+  if (isAuthenticated && !showSwitchModal) return null;
 
-  if (isAuthenticated && !showSwitchModal) {
-    return null;
+  async function submit(event) {
+    event.preventDefault();
+    setBusy(true); setError('');
+    const result = await (currentMode === 'setup' ? setup({ username, password, setupToken })
+      : currentMode === 'player' ? switchUser(username)
+      : currentMode === 'key' ? loginWithKey(apiKey.trim()) : login(password, username));
+    setBusy(false);
+    if (!result.success) setError(result.error);
+    else { setPassword(''); setApiKey(''); setSetupToken(''); }
   }
+  function choose(next) { setMode(next); setPassword(''); setApiKey(''); setError(''); }
 
-  const handleLoginSubmit = (e) => {
-    e.preventDefault();
-    setError('');
-    const result = login(password, username);
-    if (!result.success) {
-      setError(result.error);
-    }
-  };
-
-  const handleSwitchSubmit = (e) => {
-    e.preventDefault();
-    if (!newUsername.trim()) {
-      setError('Please enter a player name');
-      return;
-    }
-    switchUser(newUsername.trim());
-    setNewUsername('');
-    setError('');
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xs">
-      <div className="relative w-full max-w-md mc-panel p-6 text-slate-100">
-        
-        {showSwitchModal ? (
-          <div>
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-8 h-8 bg-[#383838] border-2 border-black flex items-center justify-center text-[#55ffff]">
-                <User className="w-4 h-4" />
-              </div>
-              <div>
-                <h2 className="text-sm font-bold font-minecraft text-[#ffff55] mc-shadow-yellow">
-                  SWITCH PLAYER
-                </h2>
-                <p className="text-[10px] font-pixel text-[#aaaaaa]">
-                  Current player: <span className="text-[#55ffff]">{currentUser}</span>
-                </p>
-              </div>
-            </div>
-
-            {error && (
-              <div className="mb-3 p-2 text-[10px] font-pixel text-[#ff5555] bg-[#331111] border-2 border-black">
-                {error}
-              </div>
-            )}
-
-            <form onSubmit={handleSwitchSubmit} className="space-y-3">
-              <div>
-                <label className="block text-[9px] font-minecraft uppercase tracking-wider text-[#aaaaaa] mb-1">
-                  New Player Name:
-                </label>
-                <input
-                  type="text"
-                  value={newUsername}
-                  onChange={(e) => setNewUsername(e.target.value)}
-                  placeholder="e.g. Alex"
-                  className="mc-input w-full px-3 py-2 text-xs"
-                  autoFocus
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowSwitchModal(false)}
-                  className="mc-btn py-2 text-[10px]"
-                >
-                  CANCEL
-                </button>
-                <button
-                  type="submit"
-                  className="mc-btn-emerald py-2 text-[10px]"
-                >
-                  CONFIRM
-                </button>
-              </div>
-            </form>
-          </div>
-        ) : (
-          <div>
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-10 h-10 bg-[#383838] border-2 border-black flex items-center justify-center text-xl shrink-0">
-                ⛏️
-              </div>
-              <div>
-                <h2 className="text-sm sm:text-base font-bold font-minecraft text-white mc-shadow">
-                  MINECRAFT ALL-ITEMS
-                </h2>
-                <p className="text-[10px] font-pixel text-[#aaaaaa]">
-                  Multiplayer Survival Tracker
-                </p>
-              </div>
-            </div>
-
-            <p className="text-[11px] font-pixel text-[#cccccc] mb-4 leading-relaxed mc-shadow-sm">
-              Enter the shared server password and your Minecraft player name to join the hunt.
-            </p>
-
-            {error && (
-              <div className="mb-3 p-2 text-[10px] font-pixel text-[#ff5555] bg-[#331111] border-2 border-black">
-                {error}
-              </div>
-            )}
-
-            <form onSubmit={handleLoginSubmit} className="space-y-3">
-              <div>
-                <label className="block text-[9px] font-minecraft uppercase tracking-wider text-[#aaaaaa] mb-1">
-                  Site Password:
-                </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="minecraft"
-                  className="mc-input w-full px-3 py-2 text-xs"
-                  autoFocus
-                />
-                <p className="mt-1 text-[9px] font-pixel text-[#777777]">
-                  Default: <span className="text-[#ffff55]">minecraft</span>
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-[9px] font-minecraft uppercase tracking-wider text-[#aaaaaa] mb-1">
-                  Your Minecraft Player Name:
-                </label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="e.g. Calvin"
-                  className="mc-input w-full px-3 py-2 text-xs"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="mc-btn-emerald w-full mt-2 py-2.5 text-xs tracking-wider"
-              >
-                JOIN WORLD
-              </button>
-            </form>
-          </div>
-        )}
-      </div>
+  return <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 overflow-y-auto">
+    <div className="w-full max-w-md mc-panel p-6 text-slate-100 my-auto">
+      <h1 className="font-minecraft text-sm text-[#ffff55] mb-2">{currentMode === 'setup' ? 'SET SHARED PASSWORD' : currentMode === 'player' ? 'SWITCH PLAYER' : 'MINECRAFT ALL-ITEMS'}</h1>
+      <p className="font-pixel text-xs text-[#aaaaaa] mb-4 leading-relaxed">
+        {currentMode === 'setup' ? 'Use the one-time setup code from the server to set your group’s shared password and choose your player name.'
+          : currentMode === 'key' ? 'Use an API key to open the tracker with that key’s permissions.'
+          : currentMode === 'player' ? 'Choose the player name for this session. Existing API keys keep their original player name.' : 'Enter the shared password and your Minecraft player name to join the hunt.'}
+      </p>
+      {!setupRequired && currentMode !== 'player' && <div className="flex gap-2 mb-4 text-[10px]">
+        <button className={mode === 'login' ? 'mc-btn-emerald p-2' : 'mc-btn p-2'} onClick={() => choose('login')}>SHARED PASSWORD</button>
+        <button className={mode === 'key' ? 'mc-btn-emerald p-2' : 'mc-btn p-2'} onClick={() => choose('key')}>API KEY</button>
+      </div>}
+      {(error || authError) && <p role="alert" className="p-3 mb-3 text-xs text-[#ff8888] bg-[#331111] border border-black">{error || authError}</p>}
+      <form onSubmit={submit} className="space-y-3 text-xs">
+        {currentMode === 'setup' && <label className="block">Setup code
+          <input type="password" autoComplete="off" value={setupToken} onChange={e => setSetupToken(e.target.value)} required className="mc-input w-full p-2 mt-1" />
+        </label>}
+        {currentMode === 'key' ? <label className="block">API key
+          <input type="password" value={apiKey} onChange={e => setApiKey(e.target.value)} autoComplete="off" required placeholder="mct_…" className="mc-input w-full p-2 mt-1" />
+        </label> : <>
+          <label className="block">Player name
+            <input value={username} onChange={e => setUsername(e.target.value)} autoComplete="username" pattern="[A-Za-z0-9_]{3,32}" minLength={3} maxLength={32} required className="mc-input w-full p-2 mt-1" />
+          </label>
+          {currentMode !== 'player' && <label className="block">Shared password
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)} autoComplete={currentMode === 'login' ? 'current-password' : 'new-password'} minLength={currentMode === 'login' ? 1 : 12} maxLength={256} required className="mc-input w-full p-2 mt-1" />
+          </label>}
+          {currentMode === 'setup' && <p className="text-[10px] text-[#aaaaaa]">Use at least 12 characters. Share this password with trusted players. Only its salted hash is stored.</p>}
+        </>}
+        <button disabled={busy} type="submit" className="mc-btn-emerald w-full p-3 disabled:opacity-50">{busy ? 'PLEASE WAIT…' : currentMode === 'setup' ? 'SET SHARED PASSWORD' : currentMode === 'player' ? 'SWITCH PLAYER' : 'SIGN IN'}</button>
+        {showSwitchModal && <button type="button" className="mc-btn w-full p-2" onClick={() => setShowSwitchModal(false)}>CANCEL</button>}
+      </form>
     </div>
-  );
+  </div>;
 }

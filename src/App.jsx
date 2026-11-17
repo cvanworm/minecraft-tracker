@@ -8,6 +8,7 @@ import CompletedView from './components/CompletedView';
 import RandomItemModal from './components/RandomItemModal';
 import AuthModal from './components/AuthModal';
 import Toast from './components/Toast';
+import ApiKeysModal from './components/ApiKeysModal';
 import { CATEGORIES } from './data/itemsData';
 
 function MainTrackerApp() {
@@ -18,9 +19,12 @@ function MainTrackerApp() {
     setSearchQuery,
     setSelectedCategory,
     setStatusFilter,
+    canImportLegacy,
+    importLegacy,
   } = useItems();
 
   const [isRandomModalOpen, setIsRandomModalOpen] = useState(false);
+  const [isAccessOpen, setIsAccessOpen] = useState(false);
 
   const groupedByCategory = useMemo(() => {
     const groups = {};
@@ -62,13 +66,17 @@ function MainTrackerApp() {
       {isAuthenticated && (
         <>
           {/* Top Dashboard Header */}
-          <Header />
+          <Header onOpenAccess={() => setIsAccessOpen(true)} />
 
           {/* Sticky Filters & Search */}
           <FilterBar onOpenRandomModal={() => setIsRandomModalOpen(true)} />
 
           {/* Main Body Content */}
           <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-4">
+            {canImportLegacy && <div className="mc-panel p-3 mb-4 text-xs flex flex-wrap gap-3 items-center justify-between">
+              <span>This browser has progress saved from the previous tracker.</span>
+              <button className="mc-btn p-2" onClick={importLegacy}>IMPORT SAVED PROGRESS</button>
+            </div>}
             {viewMode === 'completed' ? (
               <CompletedView />
             ) : (
@@ -119,6 +127,7 @@ function MainTrackerApp() {
 
           {/* Undo Action Toast */}
           <Toast />
+          {isAccessOpen && <ApiKeysModal onClose={() => setIsAccessOpen(false)} />}
 
           {/* Footer */}
           <footer className="border-t-4 border-black bg-[#16120e] py-4 text-center text-[10px] font-pixel text-[#777777]">
